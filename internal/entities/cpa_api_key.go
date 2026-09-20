@@ -9,6 +9,7 @@ type CPAAPIKey struct {
 	DisplayKey           string
 	KeyAlias             string
 	LocalRankingAvatarID *uint8
+	IsPolicy             bool       `gorm:"not null;default:false"`
 	IsDeleted            bool       `gorm:"index:idx_cpa_api_keys_is_deleted"`
 	LastSyncedAt         *time.Time `gorm:"serializer:storageTime"`
 	CreatedAt            time.Time  `gorm:"serializer:storageTime"`

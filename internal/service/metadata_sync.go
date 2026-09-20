@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"cpa-usage-keeper/internal/cpa/dto/cpaapikeys"
 	"fmt"
 
 	"cpa-usage-keeper/internal/repository"
@@ -34,7 +35,17 @@ func (s *SyncService) SyncMetadata(ctx context.Context) error {
 	// provider snapshot 最后一次进入 scoped replace 单事务，并分开返回 persistence error 与 fetch warning。
 	providerSyncErr, providerWarningErr := persistProviderMetadata(ctx, s.db, providerSnapshot, providerFetchErr, fetchedAt)
 	// 三类持久化错误按 Auth Files、管理 key、provider 的既有顺序合并。
-	upsertErr := joinErrors(authSyncErr, apiKeySyncErr, providerSyncErr)
+	var policyErr error
+	if fetcher, ok := s.metadataFetcher.(interface {
+		FetchKeyPolicyKeys(context.Context) ([]cpaapikeys.PolicyKey, error)
+	}); ok {
+		keys, err := fetcher.FetchKeyPolicyKeys(ctx)
+		policyErr = err
+		if err == nil {
+			policyErr = repository.SyncKeyPolicyIdentities(s.db, keys, fetchedAt)
+		}
+	}
+	upsertErr := joinErrors(authSyncErr, apiKeySyncErr, providerSyncErr, policyErr)
 	// aggregateErr 只承接没有 notifier 的兼容同步补算错误。
 	var aggregateErr error
 	// 任一数据库写入失败都阻止基于半成品 identity 发送通知或执行兼容补算。

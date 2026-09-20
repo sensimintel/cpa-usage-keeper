@@ -38,14 +38,14 @@ func (s *cpaAPIKeyService) FindActiveCPAAPIKeyByValue(_ context.Context, apiKey 
 	if trimmed == "" {
 		return entities.CPAAPIKey{}, gorm.ErrRecordNotFound
 	}
-	return repository.FindActiveCPAAPIKeyByValue(s.db, trimmed)
+	return repository.FindActiveCPAAPIKeyByValue(s.db.Where("is_policy = ?", false), trimmed)
 }
 
 func (s *cpaAPIKeyService) FindActiveCPAAPIKeyByID(_ context.Context, id int64) (entities.CPAAPIKey, error) {
 	if id <= 0 {
 		return entities.CPAAPIKey{}, gorm.ErrRecordNotFound
 	}
-	return repository.FindActiveCPAAPIKeyByID(s.db, id)
+	return repository.FindActiveCPAAPIKeyByID(s.db.Where("is_policy = ?", false), id)
 }
 
 func (s *cpaAPIKeyService) UpdateCPAAPIKeyAlias(_ context.Context, id int64, keyAlias string) (entities.CPAAPIKey, error) {
