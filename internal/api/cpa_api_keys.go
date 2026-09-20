@@ -183,6 +183,9 @@ func toCPAAPIKeyResponse(row entities.CPAAPIKey) cpaAPIKeyResponse {
 }
 
 func toCPAAPIKeySettingsResponse(row entities.CPAAPIKey) cpaAPIKeySettingsResponse {
+	if row.IsPolicy {
+		row.APIKey = ""
+	}
 	label := helper.CPAAPIKeyDisplayName(row)
 	var lastSyncedAt *string
 	if row.LastSyncedAt != nil {

@@ -2,6 +2,7 @@ package migration
 
 import (
 	"context"
+	"cpa-usage-keeper/internal/entities"
 	"fmt"
 	"time"
 
@@ -164,6 +165,7 @@ func createSchemaMigrationsTable(db *gorm.DB) error {
 
 func orderedMigrations() []databaseMigration {
 	return []databaseMigration{
+
 		{version: migrationAddUsageEventRedisFields, run: addUsageEventRedisFieldsMigration},
 		{version: migrationBackfillUsageEventRedisFields, run: backfillUsageEventRedisFieldsMigration},
 		{version: migrationDropSnapshotRuns, run: dropSnapshotRunsMigration},
@@ -241,6 +243,12 @@ func orderedMigrations() []databaseMigration {
 		// 将单列 Key 索引收敛为 Key+时间复合索引，支持请求记录和历史边界查询。
 		{version: migrationAddUsageEventAPIGroupKeyTimestampIndex, run: addUsageEventAPIGroupKeyTimestampIndexMigration},
 		{version: migrationAddUsageIdentityStatsReset, run: addUsageIdentityStatsResetMigration},
+		{version: "20260920_key_policy_identities", run: func(tx *gorm.DB) error {
+			if tx.Migrator().HasColumn(&entities.CPAAPIKey{}, "IsPolicy") {
+				return nil
+			}
+			return tx.Migrator().AddColumn(&entities.CPAAPIKey{}, "IsPolicy")
+		}},
 	}
 }
 

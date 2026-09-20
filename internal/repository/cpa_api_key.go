@@ -32,7 +32,7 @@ func SyncCPAAPIKeys(db *gorm.DB, keys []string, syncedAt time.Time) error {
 			APIKey    string
 			IsDeleted bool
 		}
-		if err := tx.Model(&entities.CPAAPIKey{}).Select("id, api_key, is_deleted").Find(&existingRows).Error; err != nil {
+		if err := tx.Model(&entities.CPAAPIKey{}).Where("is_policy = ?", false).Select("id, api_key, is_deleted").Find(&existingRows).Error; err != nil {
 			return err
 		}
 
